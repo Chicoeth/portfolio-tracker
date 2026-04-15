@@ -1,0 +1,59 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --color-gain: #22c55e;
+  --color-loss: #ef4444;
+  --color-brand: #0c99e9;
+}
+
+body {
+  @apply bg-surface-0 text-gray-100 antialiased;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  @apply bg-transparent;
+}
+::-webkit-scrollbar-thumb {
+  @apply bg-surface-4 rounded-full;
+}
+
+/* Recharts overrides */
+.recharts-cartesian-grid-horizontal line,
+.recharts-cartesian-grid-vertical line {
+  stroke: rgba(255, 255, 255, 0.06);
+}
+
+.recharts-tooltip-wrapper {
+  outline: none;
+}
+
+/* Markdown content */
+.prose-wallet {
+  @apply prose prose-invert prose-sm max-w-none;
+}
+.prose-wallet h1,
+.prose-wallet h2,
+.prose-wallet h3 {
+  @apply text-gray-100 font-semibold;
+}
+.prose-wallet p {
+  @apply text-gray-300 leading-relaxed;
+}
+.prose-wallet a {
+  @apply text-brand-400 hover:text-brand-300 underline;
+}
+.prose-wallet ul,
+.prose-wallet ol {
+  @apply text-gray-300;
+}
+
+/* Pie chart tooltip */
+.pie-tooltip {
+  @apply bg-surface-2 border border-surface-4 rounded-lg px-3 py-2 shadow-xl;
+}
