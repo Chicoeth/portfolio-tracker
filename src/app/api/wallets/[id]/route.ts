@@ -43,18 +43,38 @@ export async function GET(
     currentComposition = wallet.compositions.filter((c) => c.endDate === null);
   }
 
-  // Get latest prices for current assets
+  // Get prices for current assets
+  // For closed wallets: use the price at or before closedAt
+  // For active wallets: use the latest available price
   const currentAssetIds = currentComposition.map((c) => c.assetId);
-  const latestPrices = await prisma.dailyPrice.findMany({
-    where: {
-      assetId: { in: currentAssetIds },
-    },
-    orderBy: { date: "desc" },
-    distinct: ["assetId"],
-  });
+  const isClosed = wallet.status === "closed" && wallet.closedAt;
+
+  let exitPrices: { assetId: string; priceUsd: any; marketCap: bigint | null }[];
+
+  if (isClosed) {
+    // For closed wallets, get the price on or before the closing date
+    const closedDate = new Date(wallet.closedAt!);
+    exitPrices = await prisma.dailyPrice.findMany({
+      where: {
+        assetId: { in: currentAssetIds },
+        date: { lte: closedDate },
+      },
+      orderBy: { date: "desc" },
+      distinct: ["assetId"],
+    });
+  } else {
+    // For active wallets, get the most recent price
+    exitPrices = await prisma.dailyPrice.findMany({
+      where: {
+        assetId: { in: currentAssetIds },
+      },
+      orderBy: { date: "desc" },
+      distinct: ["assetId"],
+    });
+  }
 
   const priceMap = Object.fromEntries(
-    latestPrices.map((p) => [p.assetId, { priceUsd: Number(p.priceUsd), marketCap: p.marketCap?.toString() }])
+    exitPrices.map((p) => [p.assetId, { priceUsd: Number(p.priceUsd), marketCap: p.marketCap?.toString() }])
   );
 
   // Get entry prices for ROI calculation
