@@ -27,6 +27,8 @@ export interface RebalanceMarker {
   type: string;
   notes: string | null;
   portfolioValue: number;
+  prevWeights: Record<string, number>;
+  newWeights: Record<string, number>;
   changes: {
     added: string[];
     removed: string[];
@@ -230,6 +232,8 @@ export function calculatePerformance(
       type: curr.eventId,
       notes: null,
       portfolioValue: rebalPoint ? rebalPoint.portfolioValue : curr.portfolioValueAtStart,
+      prevWeights: { ...prev.weights },
+      newWeights: { ...curr.weights },
       changes: { added, removed, weightChanges },
     });
   }

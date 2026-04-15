@@ -78,6 +78,8 @@ export interface RebalanceMarker {
   type: string;
   notes: string | null;
   portfolioValue: number;
+  prevWeights: Record<string, number>;
+  newWeights: Record<string, number>;
   changes: {
     added: string[];
     removed: string[];

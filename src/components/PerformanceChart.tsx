@@ -26,6 +26,16 @@ const ASSET_COLORS = [
 type TimeRange = "30d" | "90d" | "180d" | "1y" | "all";
 type Denomination = "usd" | "brl";
 
+// ─── Helper: short asset name ───────────────────────────
+
+function shortName(assetId: string, assetNames?: Record<string, string>): string {
+  const full = assetNames?.[assetId];
+  if (!full) return assetId;
+  // Extract symbol from "Bitcoin (BTC)" → "BTC"
+  const match = full.match(/\(([^)]+)\)/);
+  return match ? match[1] : full;
+}
+
 // ─── Custom Tooltip ─────────────────────────────────────
 
 function CustomTooltip({ active, payload, label, denomination, assetNames, markers }: any) {
@@ -63,6 +73,16 @@ function CustomTooltip({ active, payload, label, denomination, assetNames, marke
     if (name === "portfolio") return `Carteira vs ${denomination.toUpperCase()}`;
     if (name === "vsBtc") return "Carteira vs BTC";
     return assetNames?.[name.replace("asset_", "")] || name.replace("asset_", "");
+  };
+
+  // Build before/after composition display
+  const renderComposition = (weights: Record<string, number>) => {
+    const sorted = Object.entries(weights).sort((a, b) => b[1] - a[1]);
+    return sorted.map(([assetId, weight]) => (
+      <span key={assetId} className="whitespace-nowrap">
+        {shortName(assetId, assetNames)} {(weight * 100).toFixed(0)}%
+      </span>
+    ));
   };
 
   return (
@@ -112,35 +132,44 @@ function CustomTooltip({ active, payload, label, denomination, assetNames, marke
         </>
       )}
 
-      {/* Rebalance info */}
+      {/* Rebalance info — Before → After */}
       {marker && (
         <>
           <div className="border-t border-violet-500/30" />
           <div className="px-3 py-2 bg-violet-500/5">
-            <div className="flex items-center gap-1.5 mb-1">
+            <div className="flex items-center gap-1.5 mb-1.5">
               <span className="text-violet-400 text-[11px] font-semibold">⟳ Rebalanceamento</span>
             </div>
-            {marker.changes.removed.length > 0 && (
-              <div className="text-[11px] text-red-400">
-                − Saiu: {marker.changes.removed.map((a: string) => assetNames?.[a] || a).join(", ")}
+
+            {marker.prevWeights && marker.newWeights && (
+              <div className="text-[11px] space-y-1">
+                {/* Before */}
+                <div>
+                  <span className="text-gray-500 font-medium">Antes: </span>
+                  <span className="text-gray-400">
+                    {renderComposition(marker.prevWeights).reduce((acc: any[], el: any, i: number, arr: any[]) => {
+                      acc.push(el);
+                      if (i < arr.length - 1) acc.push(<span key={`sep-prev-${i}`}> · </span>);
+                      return acc;
+                    }, [])}
+                  </span>
+                </div>
+                {/* After */}
+                <div>
+                  <span className="text-gray-500 font-medium">Depois: </span>
+                  <span className="text-gray-300">
+                    {renderComposition(marker.newWeights).reduce((acc: any[], el: any, i: number, arr: any[]) => {
+                      acc.push(el);
+                      if (i < arr.length - 1) acc.push(<span key={`sep-new-${i}`}> · </span>);
+                      return acc;
+                    }, [])}
+                  </span>
+                </div>
               </div>
             )}
-            {marker.changes.added.length > 0 && (
-              <div className="text-[11px] text-emerald-400">
-                + Entrou: {marker.changes.added.map((a: string) => assetNames?.[a] || a).join(", ")}
-              </div>
-            )}
-            {marker.changes.weightChanges.length > 0 && (
-              <div className="text-[11px] text-gray-400 space-y-0.5 mt-0.5">
-                {marker.changes.weightChanges.map((wc: any, i: number) => (
-                  <div key={i}>
-                    {assetNames?.[wc.assetId] || wc.assetId}: {(wc.from * 100).toFixed(0)}% → {(wc.to * 100).toFixed(0)}%
-                  </div>
-                ))}
-              </div>
-            )}
+
             {marker.notes && (
-              <div className="text-[10px] text-gray-500 mt-1 italic leading-relaxed">
+              <div className="text-[10px] text-gray-500 mt-1.5 italic leading-relaxed">
                 {marker.notes}
               </div>
             )}
@@ -273,7 +302,9 @@ export function PerformanceChart({ walletId, assetNames = {} }: Props) {
           </div>
           <button onClick={() => setShowAssets(!showAssets)}
             className={`px-3 py-1.5 text-xs font-medium rounded-lg border transition-colors ${
-              showAssets ? "border-brand-500 text-brand-400 bg-brand-500/10" : "border-surface-4 text-gray-500 hover:text-gray-300"
+              showAssets
+                ? "border-brand-500 bg-brand-500/10 text-brand-400"
+                : "border-surface-4 text-gray-500 hover:text-gray-300"
             }`}>
             Componentes
           </button>
