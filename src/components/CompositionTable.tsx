@@ -76,6 +76,39 @@ function ExternalLinkIcon({
   );
 }
 
+/**
+ * Renderiza o ícone do ativo: usa iconUrl se disponível,
+ * senão cai no fallback do símbolo em texto.
+ */
+function AssetIcon({
+  iconUrl,
+  symbol,
+  displayName,
+}: {
+  iconUrl: string | null;
+  symbol: string;
+  displayName: string;
+}) {
+  if (iconUrl) {
+    return (
+      <div className="w-8 h-8 rounded-full bg-surface-3 flex items-center justify-center shrink-0 overflow-hidden">
+        <img
+          src={iconUrl}
+          alt={displayName}
+          className="w-8 h-8 object-contain"
+          loading="lazy"
+        />
+      </div>
+    );
+  }
+
+  return (
+    <div className="w-8 h-8 rounded-full bg-surface-3 flex items-center justify-center text-xs font-bold text-gray-300 shrink-0">
+      {symbol.slice(0, 3)}
+    </div>
+  );
+}
+
 export function CompositionTable({ compositions }: Props) {
   return (
     <div className="overflow-x-auto">
@@ -125,9 +158,11 @@ export function CompositionTable({ compositions }: Props) {
                 {/* Asset */}
                 <td className="py-3 px-4">
                   <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-full bg-surface-3 flex items-center justify-center text-xs font-bold text-gray-300 shrink-0">
-                      {c.asset.symbol.slice(0, 3)}
-                    </div>
+                    <AssetIcon
+                      iconUrl={c.asset.iconUrl}
+                      symbol={c.asset.symbol}
+                      displayName={c.asset.displayName}
+                    />
                     <div>
                       <p className="font-medium text-gray-100">
                         {c.asset.displayName}

@@ -12,7 +12,9 @@
     "db:push": "prisma db push",
     "db:seed": "tsx prisma/seed.ts",
     "ingest:initial": "tsx scripts/initial-ingest.ts",
-    "ingest:daily": "tsx scripts/daily-update.ts"
+    "ingest:daily": "tsx scripts/daily-update.ts",
+    "icons:download": "tsx scripts/download-asset-icons.ts",
+    "icons:download:force": "tsx scripts/download-asset-icons.ts --force"
   },
   "dependencies": {
     "@prisma/client": "^6.3.0",
