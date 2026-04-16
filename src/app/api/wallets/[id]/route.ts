@@ -112,6 +112,7 @@ export async function GET(
         symbol: c.asset.symbol,
         riskLevel: c.asset.riskLevel,
         description: c.asset.description,
+        iconUrl: c.asset.iconUrl,
         websiteUrl: c.asset.websiteUrl,
         coingeckoUrl: c.asset.coingeckoUrl,
         tradingviewUrl: c.asset.tradingviewUrl,
