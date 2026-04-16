@@ -60,6 +60,7 @@ model Asset {
   riskLevel     RiskLevel @map("risk_level")
   description   String  @db.Text
   iconUrl       String? @map("icon_url")
+  paradigmaUrl  String? @map("paradigma_url")
   websiteUrl    String? @map("website_url")
   coingeckoUrl  String? @map("coingecko_url")
   tradingviewUrl String? @map("tradingview_url")

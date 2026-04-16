@@ -19,6 +19,7 @@ export default function NewAssetPage() {
     symbol: "",
     riskLevel: "medium" as "low" | "medium" | "high" | "very_high",
     description: "",
+    paradigmaUrl: "",
     websiteUrl: "",
     coingeckoUrl: "",
     tradingviewUrl: "",
@@ -50,6 +51,7 @@ export default function NewAssetPage() {
     try {
       const payload = {
         ...form,
+        paradigmaUrl: form.paradigmaUrl || null,
         websiteUrl: form.websiteUrl || null,
         coingeckoUrl: form.coingeckoUrl || null,
         tradingviewUrl: form.tradingviewUrl || null,
@@ -115,7 +117,7 @@ export default function NewAssetPage() {
           </div>
           <div>
             <label className="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1.5">
-              Nome de exibição
+              Nome
             </label>
             <input
               type="text"
@@ -171,6 +173,7 @@ export default function NewAssetPage() {
           <div className="space-y-2">
             {(
               [
+                { key: "paradigmaUrl", label: "Paradigma", ph: "https://paradigma.education/coins/bitcoin" },
                 { key: "websiteUrl", label: "Website", ph: "https://bitcoin.org" },
                 { key: "coingeckoUrl", label: "CoinGecko", ph: "https://www.coingecko.com/en/coins/bitcoin" },
                 { key: "tradingviewUrl", label: "TradingView", ph: "https://www.tradingview.com/symbols/BTCUSD" },

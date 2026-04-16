@@ -31,27 +31,36 @@ function formatROI(roi: number | null): { text: string; color: string } {
   };
 }
 
-// Map exchange/platform names to logo filenames
+// Map exchange/platform names to logo filenames (in /public/logos/)
 const LOGO_MAP: Record<string, string> = {
-  Binance: "binance.svg",
-  Coinbase: "coinbase.svg",
-  Hyperliquid: "hyperliquid.svg",
-  MercadoBitcoin: "mercadobitcoin.svg",
-  Uniswap: "uniswap.svg",
-  Jupiter: "jupiter.svg",
-  CoinGecko: "coingecko.svg",
-  TradingView: "tradingview.svg",
-  DeFiLlama: "defillama.svg",
+  Binance: "binance.png",
+  Coinbase: "coinbase.png",
+  Hyperliquid: "hyperliquid.png",
+  MercadoBitcoin: "mercadobitcoin.png",
+  Uniswap: "uniswap.png",
+  Jupiter: "jupiter.png",
+  CoinGecko: "coingecko.png",
+  TradingView: "tradingview.png",
+  DeFiLlama: "defillama.png",
+  Paradigma: "paradigma.png",
+  Website: "", // no logo for generic website
 };
 
 function ExternalLinkIcon({
   name,
   url,
+  size = "normal",
 }: {
   name: string;
   url: string;
+  size?: "normal" | "large";
 }) {
   const logo = LOGO_MAP[name];
+  const isLarge = size === "large";
+  const boxClass = isLarge
+    ? "inline-flex items-center justify-center w-9 h-9 rounded-md bg-surface-3 hover:bg-surface-4 transition-colors"
+    : "inline-flex items-center justify-center w-7 h-7 rounded-md bg-surface-3 hover:bg-surface-4 transition-colors";
+  const imgClass = isLarge ? "w-5 h-5 object-contain" : "w-4 h-4 object-contain";
 
   return (
     <a
@@ -59,13 +68,14 @@ function ExternalLinkIcon({
       target="_blank"
       rel="noopener noreferrer"
       title={name}
-      className="inline-flex items-center justify-center w-7 h-7 rounded-md bg-surface-3 hover:bg-surface-4 transition-colors"
+      className={boxClass}
     >
       {logo ? (
         <img
           src={`/logos/${logo}`}
           alt={name}
-          className="w-4 h-4 object-contain"
+          className={imgClass}
+          loading="lazy"
         />
       ) : (
         <span className="text-[10px] text-gray-400 font-medium">
@@ -144,11 +154,15 @@ export function CompositionTable({ compositions }: Props) {
             const roi = formatROI(c.roi);
             const exchanges = (c.asset.exchanges as { name: string; url: string }[]) || [];
 
-            const infoLinks: { name: string; url: string }[] = [];
-            if (c.asset.websiteUrl) infoLinks.push({ name: "Website", url: c.asset.websiteUrl });
-            if (c.asset.coingeckoUrl) infoLinks.push({ name: "CoinGecko", url: c.asset.coingeckoUrl });
-            if (c.asset.tradingviewUrl) infoLinks.push({ name: "TradingView", url: c.asset.tradingviewUrl });
-            if (c.asset.defillamaUrl) infoLinks.push({ name: "DeFiLlama", url: c.asset.defillamaUrl });
+            // Build info links — Paradigma FIRST and larger, then the rest
+            const infoLinks: { name: string; url: string; size: "normal" | "large" }[] = [];
+            if (c.asset.paradigmaUrl) {
+              infoLinks.push({ name: "Paradigma", url: c.asset.paradigmaUrl, size: "large" });
+            }
+            if (c.asset.websiteUrl) infoLinks.push({ name: "Website", url: c.asset.websiteUrl, size: "normal" });
+            if (c.asset.coingeckoUrl) infoLinks.push({ name: "CoinGecko", url: c.asset.coingeckoUrl, size: "normal" });
+            if (c.asset.tradingviewUrl) infoLinks.push({ name: "TradingView", url: c.asset.tradingviewUrl, size: "normal" });
+            if (c.asset.defillamaUrl) infoLinks.push({ name: "DeFiLlama", url: c.asset.defillamaUrl, size: "normal" });
 
             return (
               <tr
@@ -216,7 +230,12 @@ export function CompositionTable({ compositions }: Props) {
                 <td className="py-3 px-4 hidden lg:table-cell">
                   <div className="flex items-center justify-center gap-1">
                     {infoLinks.map((link) => (
-                      <ExternalLinkIcon key={link.name} name={link.name} url={link.url} />
+                      <ExternalLinkIcon
+                        key={link.name}
+                        name={link.name}
+                        url={link.url}
+                        size={link.size}
+                      />
                     ))}
                     {infoLinks.length === 0 && (
                       <span className="text-xs text-gray-600">—</span>

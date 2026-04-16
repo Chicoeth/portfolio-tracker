@@ -16,6 +16,7 @@ export interface AssetInfo {
   riskLevel: "low" | "medium" | "high" | "very_high";
   description: string;
   iconUrl: string | null;
+  paradigmaUrl: string | null;
   websiteUrl: string | null;
   coingeckoUrl: string | null;
   tradingviewUrl: string | null;

@@ -2,8 +2,8 @@
  * Daily Update Script
  *
  * Runs daily via GitHub Actions. Fetches last 3 days of prices
- * from CoinGecko for all assets, plus stablecoin fixed prices
- * and exchange rates.
+ * from CoinGecko for all assets, plus stablecoin fixed prices,
+ * exchange rates, and auto-downloads missing asset icons.
  *
  * Usage: npx tsx scripts/daily-update.ts
  */
@@ -11,15 +11,20 @@
 import { PrismaClient } from "@prisma/client";
 import { getCoinHistory, sleep } from "../src/lib/coingecko-api";
 import { getExchangeRatesFromAPI } from "../src/lib/exchange-rate-api";
+import * as fs from "fs/promises";
+import * as path from "path";
 
 const prisma = new PrismaClient();
 const SYNTHETIC_ASSETS = ["stablecoins"];
+const ICONS_DIR = path.join(process.cwd(), "public", "logos", "assets");
+const PUBLIC_PATH_PREFIX = "/logos/assets";
+const COINGECKO_BASE = "https://api.coingecko.com/api/v3";
 
 async function main() {
   console.log("🔄 Daily price update\n");
 
   // 1. Get all assets
-  const assets = await prisma.asset.findMany({ select: { ticker: true } });
+  const assets = await prisma.asset.findMany({ select: { ticker: true, iconUrl: true } });
   const tickers = assets
     .map((a) => a.ticker)
     .filter((t) => !SYNTHETIC_ASSETS.includes(t));
@@ -110,7 +115,105 @@ async function main() {
     console.log(`  ⚠️  Exchange rates failed: ${err.message}`);
   }
 
+  // 5. Auto-download missing asset icons
+  console.log("\n🎨 Checking for missing asset icons...");
+  await downloadMissingIcons(assets);
+
   console.log("\n🎉 Daily update complete!");
+}
+
+/**
+ * Downloads icons from CoinGecko for assets that don't have iconUrl set.
+ * Skips synthetic assets (stablecoins) — those need manual icons.
+ */
+async function downloadMissingIcons(
+  assets: { ticker: string; iconUrl: string | null }[]
+) {
+  // Ensure icons directory exists
+  await fs.mkdir(ICONS_DIR, { recursive: true });
+
+  const missing = assets.filter(
+    (a) => !a.iconUrl && !SYNTHETIC_ASSETS.includes(a.ticker)
+  );
+
+  if (missing.length === 0) {
+    console.log("  ✅ All assets have icons");
+    return;
+  }
+
+  console.log(`  📦 ${missing.length} assets missing icons: ${missing.map((a) => a.ticker).join(", ")}`);
+
+  let downloaded = 0;
+
+  for (const asset of missing) {
+    try {
+      // Fetch coin metadata to get image URL
+      const url = `${COINGECKO_BASE}/coins/${asset.ticker}?localization=false&tickers=false&market_data=false&community_data=false&developer_data=false&sparkline=false`;
+
+      const res = await fetch(url, { headers: { Accept: "application/json" } });
+
+      if (res.status === 429) {
+        console.log(`    ⏳ Rate limited, waiting 60s...`);
+        await sleep(60000);
+        continue; // will retry next daily run
+      }
+
+      if (res.status === 404) {
+        console.log(`    ⚠️  ${asset.ticker}: not found on CoinGecko`);
+        await sleep(2500);
+        continue;
+      }
+
+      if (!res.ok) {
+        console.log(`    ❌ ${asset.ticker}: CoinGecko ${res.status}`);
+        await sleep(2500);
+        continue;
+      }
+
+      const data = await res.json();
+      const imageUrl = data?.image?.small || data?.image?.thumb || data?.image?.large;
+
+      if (!imageUrl) {
+        console.log(`    ⚠️  ${asset.ticker}: no image available`);
+        await sleep(2500);
+        continue;
+      }
+
+      // Download image
+      const imgRes = await fetch(imageUrl);
+      if (!imgRes.ok) {
+        console.log(`    ❌ ${asset.ticker}: image download failed`);
+        await sleep(2500);
+        continue;
+      }
+
+      const buffer = Buffer.from(await imgRes.arrayBuffer());
+      const filename = `${asset.ticker}.png`;
+      const destPath = path.join(ICONS_DIR, filename);
+      const publicPath = `${PUBLIC_PATH_PREFIX}/${filename}`;
+
+      await fs.writeFile(destPath, buffer);
+
+      // Update database
+      await prisma.asset.update({
+        where: { ticker: asset.ticker },
+        data: { iconUrl: publicPath },
+      });
+
+      console.log(`    ✓ ${asset.ticker}: saved to ${publicPath}`);
+      downloaded++;
+
+      await sleep(2500); // rate limit
+    } catch (err: any) {
+      console.log(`    ❌ ${asset.ticker}: ${err.message}`);
+      await sleep(2500);
+    }
+  }
+
+  if (downloaded > 0) {
+    console.log(`  ✅ Downloaded ${downloaded} new icons`);
+    console.log("  ⚠️  Remember: icons downloaded by the cron need to be committed to Git for production");
+  }
 }
 
 main()

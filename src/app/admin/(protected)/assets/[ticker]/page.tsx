@@ -23,6 +23,7 @@ export default function EditAssetPage() {
     symbol: "",
     riskLevel: "medium" as "low" | "medium" | "high" | "very_high",
     description: "",
+    paradigmaUrl: "",
     websiteUrl: "",
     coingeckoUrl: "",
     tradingviewUrl: "",
@@ -43,6 +44,7 @@ export default function EditAssetPage() {
           symbol: data.symbol || "",
           riskLevel: data.riskLevel || "medium",
           description: data.description || "",
+          paradigmaUrl: data.paradigmaUrl || "",
           websiteUrl: data.websiteUrl || "",
           coingeckoUrl: data.coingeckoUrl || "",
           tradingviewUrl: data.tradingviewUrl || "",
@@ -81,6 +83,7 @@ export default function EditAssetPage() {
       const payload = {
         ticker,
         ...form,
+        paradigmaUrl: form.paradigmaUrl || null,
         websiteUrl: form.websiteUrl || null,
         coingeckoUrl: form.coingeckoUrl || null,
         tradingviewUrl: form.tradingviewUrl || null,
@@ -203,22 +206,11 @@ export default function EditAssetPage() {
           <div className="space-y-2">
             {(
               [
+                { key: "paradigmaUrl", label: "Paradigma", ph: "https://paradigma.education/coins/bitcoin" },
                 { key: "websiteUrl", label: "Website", ph: "https://bitcoin.org" },
-                {
-                  key: "coingeckoUrl",
-                  label: "CoinGecko",
-                  ph: "https://www.coingecko.com/en/coins/bitcoin",
-                },
-                {
-                  key: "tradingviewUrl",
-                  label: "TradingView",
-                  ph: "https://www.tradingview.com/symbols/BTCUSD",
-                },
-                {
-                  key: "defillamaUrl",
-                  label: "DeFiLlama",
-                  ph: "https://defillama.com/protocol/...",
-                },
+                { key: "coingeckoUrl", label: "CoinGecko", ph: "https://www.coingecko.com/en/coins/bitcoin" },
+                { key: "tradingviewUrl", label: "TradingView", ph: "https://www.tradingview.com/symbols/BTCUSD" },
+                { key: "defillamaUrl", label: "DeFiLlama", ph: "https://defillama.com/protocol/..." },
               ] as const
             ).map(({ key, label, ph }) => (
               <div key={key} className="flex items-center gap-2">

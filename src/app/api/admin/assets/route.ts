@@ -9,6 +9,7 @@ const createAssetSchema = z.object({
   symbol: z.string().min(1).toUpperCase(),
   riskLevel: z.enum(["low", "medium", "high", "very_high"]),
   description: z.string(),
+  paradigmaUrl: z.string().url().optional().nullable(),
   websiteUrl: z.string().url().optional().nullable(),
   coingeckoUrl: z.string().url().optional().nullable(),
   tradingviewUrl: z.string().url().optional().nullable(),

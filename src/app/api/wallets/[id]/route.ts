@@ -26,13 +26,9 @@ export async function GET(
     return NextResponse.json({ error: "Wallet not found" }, { status: 404 });
   }
 
-  // Get current composition:
-  // - For active wallets: endDate is null
-  // - For closed wallets: get compositions from the LAST rebalance event
   let currentComposition: typeof wallet.compositions;
 
   if (wallet.status === "closed") {
-    // Find the last event
     const lastEvent = wallet.rebalanceEvents[wallet.rebalanceEvents.length - 1];
     if (lastEvent) {
       currentComposition = wallet.compositions.filter((c) => c.eventId === lastEvent.id);
@@ -43,16 +39,12 @@ export async function GET(
     currentComposition = wallet.compositions.filter((c) => c.endDate === null);
   }
 
-  // Get prices for current assets
-  // For closed wallets: use the price at or before closedAt
-  // For active wallets: use the latest available price
   const currentAssetIds = currentComposition.map((c) => c.assetId);
   const isClosed = wallet.status === "closed" && wallet.closedAt;
 
   let exitPrices: { assetId: string; priceUsd: any; marketCap: bigint | null }[];
 
   if (isClosed) {
-    // For closed wallets, get the price on or before the closing date
     const closedDate = new Date(wallet.closedAt!);
     exitPrices = await prisma.dailyPrice.findMany({
       where: {
@@ -63,7 +55,6 @@ export async function GET(
       distinct: ["assetId"],
     });
   } else {
-    // For active wallets, get the most recent price
     exitPrices = await prisma.dailyPrice.findMany({
       where: {
         assetId: { in: currentAssetIds },
@@ -77,7 +68,6 @@ export async function GET(
     exitPrices.map((p) => [p.assetId, { priceUsd: Number(p.priceUsd), marketCap: p.marketCap?.toString() }])
   );
 
-  // Get entry prices for ROI calculation
   const entryPrices: Record<string, number> = {};
   for (const comp of currentComposition) {
     const entryPrice = await prisma.dailyPrice.findFirst({
@@ -113,6 +103,7 @@ export async function GET(
         riskLevel: c.asset.riskLevel,
         description: c.asset.description,
         iconUrl: c.asset.iconUrl,
+        paradigmaUrl: c.asset.paradigmaUrl,
         websiteUrl: c.asset.websiteUrl,
         coingeckoUrl: c.asset.coingeckoUrl,
         tradingviewUrl: c.asset.tradingviewUrl,
