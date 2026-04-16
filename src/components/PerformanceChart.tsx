@@ -75,18 +75,20 @@ function CustomTooltip({ active, payload, label, denomination, assetNames, marke
     return assetNames?.[name.replace("asset_", "")] || name.replace("asset_", "");
   };
 
-  // Build before/after composition display
-  const renderComposition = (weights: Record<string, number>) => {
-    const sorted = Object.entries(weights).sort((a, b) => b[1] - a[1]);
-    return sorted.map(([assetId, weight]) => (
-      <span key={assetId} className="whitespace-nowrap">
-        {shortName(assetId, assetNames)} {(weight * 100).toFixed(0)}%
-      </span>
-    ));
-  };
+  // Sort weights desc, return list of [symbol, pct]
+  const sortedWeights = (weights: Record<string, number>) =>
+    Object.entries(weights)
+      .sort((a, b) => b[1] - a[1])
+      .map(([assetId, weight]) => ({
+        symbol: shortName(assetId, assetNames),
+        pct: (weight * 100).toFixed(0),
+      }));
 
   return (
-    <div className="bg-surface-2 border border-surface-4 rounded-lg shadow-xl text-xs min-w-[200px] overflow-hidden">
+    <div
+      className="bg-surface-2 border border-surface-4 rounded-lg shadow-xl text-xs overflow-hidden"
+      style={{ width: marker ? 260 : "auto", maxWidth: 320, minWidth: 200 }}
+    >
       {/* Date */}
       <div className="px-3 pt-2.5 pb-1.5 text-gray-500 text-[11px]">{dateStr}</div>
 
@@ -132,44 +134,59 @@ function CustomTooltip({ active, payload, label, denomination, assetNames, marke
         </>
       )}
 
-      {/* Rebalance info — Before → After */}
-      {marker && (
+      {/* Rebalance info — Antes → Depois (vertical layout) */}
+      {marker && marker.prevWeights && marker.newWeights && (
         <>
           <div className="border-t border-violet-500/30" />
           <div className="px-3 py-2 bg-violet-500/5">
-            <div className="flex items-center gap-1.5 mb-1.5">
+            <div className="flex items-center gap-1.5 mb-2">
               <span className="text-violet-400 text-[11px] font-semibold">⟳ Rebalanceamento</span>
             </div>
 
-            {marker.prevWeights && marker.newWeights && (
-              <div className="text-[11px] space-y-1">
-                {/* Before */}
-                <div>
-                  <span className="text-gray-500 font-medium">Antes: </span>
-                  <span className="text-gray-400">
-                    {renderComposition(marker.prevWeights).reduce((acc: any[], el: any, i: number, arr: any[]) => {
-                      acc.push(el);
-                      if (i < arr.length - 1) acc.push(<span key={`sep-prev-${i}`}> · </span>);
-                      return acc;
-                    }, [])}
-                  </span>
+            {/* Two columns with arrow */}
+            <div className="flex items-center gap-2">
+              {/* Antes */}
+              <div className="flex-1 min-w-0">
+                <div className="text-[10px] text-gray-500 font-medium mb-1 text-center">
+                  Antes
                 </div>
-                {/* After */}
-                <div>
-                  <span className="text-gray-500 font-medium">Depois: </span>
-                  <span className="text-gray-300">
-                    {renderComposition(marker.newWeights).reduce((acc: any[], el: any, i: number, arr: any[]) => {
-                      acc.push(el);
-                      if (i < arr.length - 1) acc.push(<span key={`sep-new-${i}`}> · </span>);
-                      return acc;
-                    }, [])}
-                  </span>
+                <div className="space-y-0.5">
+                  {sortedWeights(marker.prevWeights).map((w, i) => (
+                    <div
+                      key={i}
+                      className="text-[11px] text-gray-400 font-mono text-center whitespace-nowrap"
+                    >
+                      {w.symbol} — {w.pct}%
+                    </div>
+                  ))}
                 </div>
               </div>
-            )}
+
+              {/* Arrow */}
+              <div className="text-violet-400/70 text-base shrink-0 self-center">
+                →
+              </div>
+
+              {/* Depois */}
+              <div className="flex-1 min-w-0">
+                <div className="text-[10px] text-gray-500 font-medium mb-1 text-center">
+                  Depois
+                </div>
+                <div className="space-y-0.5">
+                  {sortedWeights(marker.newWeights).map((w, i) => (
+                    <div
+                      key={i}
+                      className="text-[11px] text-gray-300 font-mono text-center whitespace-nowrap"
+                    >
+                      {w.symbol} — {w.pct}%
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
 
             {marker.notes && (
-              <div className="text-[10px] text-gray-500 mt-1.5 italic leading-relaxed">
+              <div className="text-[10px] text-gray-500 mt-2 pt-2 border-t border-violet-500/20 italic leading-relaxed break-words whitespace-normal">
                 {marker.notes}
               </div>
             )}
