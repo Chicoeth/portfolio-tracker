@@ -57,7 +57,8 @@ const LOGO_MAP: Record<string, string> = {
 };
 
 /**
- * Generic hover tooltip component.
+ * Generic hover tooltip — uses fixed positioning to escape any overflow container.
+ * Opens above the element.
  */
 function Tooltip({
   children,
@@ -67,22 +68,37 @@ function Tooltip({
   content: React.ReactNode;
 }) {
   const [show, setShow] = useState(false);
-  const ref = useRef<HTMLDivElement>(null);
+  const [pos, setPos] = useState({ top: 0, left: 0 });
+  const triggerRef = useRef<HTMLDivElement>(null);
+
+  const handleEnter = () => {
+    if (triggerRef.current) {
+      const rect = triggerRef.current.getBoundingClientRect();
+      setPos({
+        top: rect.top - 8,
+        left: rect.left + rect.width / 2,
+      });
+    }
+    setShow(true);
+  };
 
   return (
     <div
-      className="relative inline-flex"
-      ref={ref}
-      onMouseEnter={() => setShow(true)}
+      className="inline-flex"
+      ref={triggerRef}
+      onMouseEnter={handleEnter}
       onMouseLeave={() => setShow(false)}
     >
       {children}
       {show && (
-        <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 z-[100] pointer-events-none">
-          <div className="w-2 h-2 bg-surface-2 border-l border-t border-surface-4 rotate-45 absolute left-1/2 -translate-x-1/2 -top-1" />
-          <div className="bg-surface-2 border border-surface-4 rounded-lg shadow-2xl px-3 py-2 text-xs text-gray-300 whitespace-nowrap max-w-[300px]">
+        <div
+          className="fixed z-[9999] pointer-events-none"
+          style={{ top: pos.top, left: pos.left, transform: "translate(-50%, -100%)" }}
+        >
+          <div className="bg-surface-2 border border-surface-4 rounded-lg shadow-2xl px-3.5 py-2.5 text-xs text-gray-300 max-w-[340px] w-max">
             <div className="whitespace-normal">{content}</div>
           </div>
+          <div className="w-2 h-2 bg-surface-2 border-r border-b border-surface-4 rotate-45 mx-auto -mt-1" />
         </div>
       )}
     </div>
