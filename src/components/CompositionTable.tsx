@@ -355,12 +355,12 @@ export function CompositionTable({ compositions }: Props) {
                 </td>
 
                 {/* Exchanges */}
-                <td className="py-3 px-4 hidden lg:table-cell">
+                <td className="py-3 px-4 text-center hidden lg:table-cell">
                   <LinkIcons links={exchangeLinks} />
                 </td>
 
                 {/* Info Links */}
-                <td className="py-3 px-4 hidden lg:table-cell">
+                <td className="py-3 px-4 text-center hidden lg:table-cell">
                   <LinkIcons links={infoLinks} />
                 </td>
               </tr>
