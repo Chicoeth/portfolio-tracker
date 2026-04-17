@@ -78,11 +78,11 @@ function Tooltip({
     >
       {children}
       {show && (
-        <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 z-[100] pointer-events-none">
+        <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 z-[100] pointer-events-none">
+          <div className="w-2 h-2 bg-surface-2 border-l border-t border-surface-4 rotate-45 absolute left-1/2 -translate-x-1/2 -top-1" />
           <div className="bg-surface-2 border border-surface-4 rounded-lg shadow-2xl px-3 py-2 text-xs text-gray-300 whitespace-nowrap max-w-[300px]">
             <div className="whitespace-normal">{content}</div>
           </div>
-          <div className="w-2 h-2 bg-surface-2 border-r border-b border-surface-4 rotate-45 absolute left-1/2 -translate-x-1/2 -bottom-1" />
         </div>
       )}
     </div>
@@ -354,9 +354,9 @@ export function CompositionTable({ compositions, isClosed = false }: Props) {
                     />
                     <div>
                       <p className="font-medium text-gray-100">
-                        {c.asset.displayName}
+                        {c.asset.symbol}
                       </p>
-                      <p className="text-xs text-gray-500">{c.asset.symbol}</p>
+                      <p className="text-xs text-gray-500">{c.asset.displayName}</p>
                     </div>
                   </div>
                 </td>
