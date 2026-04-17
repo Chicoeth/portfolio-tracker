@@ -86,7 +86,7 @@ export function WalletPage({ walletId }: Props) {
           {isClosed ? "Composição Final" : "Composição Atual"}
         </h2>
 
-        <div className="bg-surface-1 rounded-xl border border-surface-3 overflow-hidden">
+        <div className="bg-surface-1 rounded-xl border border-surface-3">
           <div className="grid grid-cols-1 lg:grid-cols-[280px_1fr] divide-y lg:divide-y-0 lg:divide-x divide-surface-3">
             {/* Pie Chart */}
             <div className="p-4 flex items-center justify-center">
@@ -94,7 +94,7 @@ export function WalletPage({ walletId }: Props) {
             </div>
 
             {/* Table */}
-            <div className="overflow-x-auto">
+            <div className="overflow-x-auto overflow-y-visible">
               <CompositionTable compositions={currentComposition} isClosed={isClosed} />
             </div>
           </div>

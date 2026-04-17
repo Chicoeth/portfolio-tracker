@@ -78,8 +78,8 @@ function Tooltip({
     >
       {children}
       {show && (
-        <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 z-50 pointer-events-none">
-          <div className="bg-surface-2 border border-surface-4 rounded-lg shadow-xl px-3 py-2 text-xs text-gray-300 whitespace-nowrap max-w-[240px]">
+        <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 z-[100] pointer-events-none">
+          <div className="bg-surface-2 border border-surface-4 rounded-lg shadow-2xl px-3 py-2 text-xs text-gray-300 whitespace-nowrap max-w-[300px]">
             <div className="whitespace-normal">{content}</div>
           </div>
           <div className="w-2 h-2 bg-surface-2 border-r border-b border-surface-4 rotate-45 absolute left-1/2 -translate-x-1/2 -bottom-1" />
@@ -321,7 +321,8 @@ export function CompositionTable({ compositions, isClosed = false }: Props) {
         <tbody>
           {compositions.map((c) => {
             const risk = RISK_LABELS[c.asset.riskLevel];
-            const roi = formatROI(c.roi);
+            const isStablecoin = c.assetId === "stablecoins";
+            const roi = formatROI(isStablecoin ? null : c.roi);
             const exchanges = (c.asset.exchanges as { name: string; url: string }[]) || [];
 
             const exchangeLinks = exchanges.map((ex) => ({
@@ -393,7 +394,7 @@ export function CompositionTable({ compositions, isClosed = false }: Props) {
 
                 {/* ROI — with tooltip showing entry/current price */}
                 <td className="py-3 px-4 text-center">
-                  {c.entryPrice !== null && c.currentPrice !== null ? (
+                  {!isStablecoin && c.entryPrice !== null && c.currentPrice !== null ? (
                     <Tooltip
                       content={
                         <div className="space-y-1">
@@ -402,7 +403,7 @@ export function CompositionTable({ compositions, isClosed = false }: Props) {
                             <span className="font-mono">{formatPrice(c.entryPrice)}</span>
                           </div>
                           <div className="flex justify-between gap-4">
-                            <span className="text-gray-500">{isClosed ? "Fechamento:" : "Atual:"}</span>
+                            <span className="text-gray-500">{isClosed ? "Saída:" : "Atual:"}</span>
                             <span className="font-mono">{formatPrice(c.currentPrice)}</span>
                           </div>
                         </div>
