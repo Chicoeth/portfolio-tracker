@@ -58,6 +58,7 @@ model Asset {
   displayName   String  @map("display_name")
   symbol        String
   riskLevel     RiskLevel @map("risk_level")
+  riskDescription String? @map("risk_description") @db.Text
   description   String  @db.Text
   iconUrl       String? @map("icon_url")
   paradigmaUrl  String? @map("paradigma_url")

@@ -8,6 +8,7 @@ const createAssetSchema = z.object({
   displayName: z.string().min(1),
   symbol: z.string().min(1).toUpperCase(),
   riskLevel: z.enum(["low", "medium", "high", "very_high"]),
+  riskDescription: z.string().optional().nullable(),
   description: z.string(),
   paradigmaUrl: z.string().url().optional().nullable(),
   websiteUrl: z.string().url().optional().nullable(),

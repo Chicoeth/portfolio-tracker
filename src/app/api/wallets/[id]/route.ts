@@ -101,6 +101,7 @@ export async function GET(
         displayName: c.asset.displayName,
         symbol: c.asset.symbol,
         riskLevel: c.asset.riskLevel,
+        riskDescription: c.asset.riskDescription,
         description: c.asset.description,
         iconUrl: c.asset.iconUrl,
         paradigmaUrl: c.asset.paradigmaUrl,

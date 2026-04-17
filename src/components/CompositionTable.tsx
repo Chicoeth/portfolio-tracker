@@ -8,10 +8,10 @@ interface Props {
 }
 
 const RISK_LABELS: Record<string, { label: string; color: string }> = {
-  low: { label: "Low", color: "text-emerald-400" },
-  medium: { label: "Medium", color: "text-amber-400" },
-  high: { label: "High", color: "text-orange-400" },
-  very_high: { label: "Very High", color: "text-red-400" },
+  low: { label: "Baixo", color: "text-emerald-400" },
+  medium: { label: "Médio", color: "text-amber-400" },
+  high: { label: "Alto", color: "text-orange-400" },
+  very_high: { label: "Muito Alto", color: "text-red-400" },
 };
 
 function formatMarketCap(mc: string | null): string {
@@ -32,6 +32,14 @@ function formatROI(roi: number | null): { text: string; color: string } {
   };
 }
 
+function formatPrice(price: number | null): string {
+  if (price === null) return "—";
+  if (price >= 1) return `$${price.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  if (price >= 0.01) return `$${price.toFixed(4)}`;
+  if (price >= 0.0001) return `$${price.toFixed(6)}`;
+  return `$${price.toFixed(8)}`;
+}
+
 // Map exchange/platform names to logo filenames (in /public/logos/)
 const LOGO_MAP: Record<string, string> = {
   Binance: "binance.png",
@@ -46,6 +54,39 @@ const LOGO_MAP: Record<string, string> = {
   Paradigma: "paradigma.png",
   Website: "",
 };
+
+/**
+ * Generic hover tooltip component.
+ */
+function Tooltip({
+  children,
+  content,
+}: {
+  children: React.ReactNode;
+  content: React.ReactNode;
+}) {
+  const [show, setShow] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  return (
+    <div
+      className="relative inline-flex"
+      ref={ref}
+      onMouseEnter={() => setShow(true)}
+      onMouseLeave={() => setShow(false)}
+    >
+      {children}
+      {show && (
+        <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 z-50 pointer-events-none">
+          <div className="bg-surface-2 border border-surface-4 rounded-lg shadow-xl px-3 py-2 text-xs text-gray-300 whitespace-nowrap max-w-[240px]">
+            <div className="whitespace-normal">{content}</div>
+          </div>
+          <div className="w-2 h-2 bg-surface-2 border-r border-b border-surface-4 rotate-45 absolute left-1/2 -translate-x-1/2 -bottom-1" />
+        </div>
+      )}
+    </div>
+  );
+}
 
 function ExternalLinkIcon({
   name,
@@ -173,7 +214,6 @@ function OverflowLinks({
 
 /**
  * Renders a row of link icons, limited to MAX_VISIBLE.
- * If more exist, shows the first (MAX_VISIBLE - 1) + an overflow "+N" button.
  */
 const MAX_VISIBLE = 3;
 
@@ -201,7 +241,6 @@ function LinkIcons({
     );
   }
 
-  // Show first (MAX_VISIBLE - 1), then overflow with the rest
   const visible = links.slice(0, MAX_VISIBLE - 1);
   const overflow = links.slice(MAX_VISIBLE - 1);
 
@@ -220,10 +259,6 @@ function LinkIcons({
   );
 }
 
-/**
- * Renderiza o ícone do ativo: usa iconUrl se disponível,
- * senão cai no fallback do símbolo em texto.
- */
 function AssetIcon({
   iconUrl,
   symbol,
@@ -288,13 +323,11 @@ export function CompositionTable({ compositions }: Props) {
             const roi = formatROI(c.roi);
             const exchanges = (c.asset.exchanges as { name: string; url: string }[]) || [];
 
-            // Build exchange links
             const exchangeLinks = exchanges.map((ex) => ({
               name: ex.name,
               url: ex.url,
             }));
 
-            // Build info links — Paradigma FIRST with special styling
             const infoLinks: { name: string; url: string; isParadigma?: boolean }[] = [];
             if (c.asset.paradigmaUrl) {
               infoLinks.push({ name: "Paradigma", url: c.asset.paradigmaUrl, isParadigma: true });
@@ -340,18 +373,49 @@ export function CompositionTable({ compositions }: Props) {
                   </span>
                 </td>
 
-                {/* Risk */}
+                {/* Risk — with tooltip */}
                 <td className="py-3 px-4 text-center hidden md:table-cell">
-                  <span className={`text-xs font-medium ${risk.color}`}>
-                    {risk.label}
-                  </span>
+                  {c.asset.riskDescription ? (
+                    <Tooltip
+                      content={c.asset.riskDescription}
+                    >
+                      <span className={`text-xs font-medium ${risk.color} cursor-help border-b border-dotted border-current`}>
+                        {risk.label}
+                      </span>
+                    </Tooltip>
+                  ) : (
+                    <span className={`text-xs font-medium ${risk.color}`}>
+                      {risk.label}
+                    </span>
+                  )}
                 </td>
 
-                {/* ROI */}
+                {/* ROI — with tooltip showing entry/current price */}
                 <td className="py-3 px-4 text-center">
-                  <span className={`font-mono font-medium ${roi.color}`}>
-                    {roi.text}
-                  </span>
+                  {c.entryPrice !== null && c.currentPrice !== null ? (
+                    <Tooltip
+                      content={
+                        <div className="space-y-1">
+                          <div className="flex justify-between gap-4">
+                            <span className="text-gray-500">Entrada:</span>
+                            <span className="font-mono">{formatPrice(c.entryPrice)}</span>
+                          </div>
+                          <div className="flex justify-between gap-4">
+                            <span className="text-gray-500">Atual:</span>
+                            <span className="font-mono">{formatPrice(c.currentPrice)}</span>
+                          </div>
+                        </div>
+                      }
+                    >
+                      <span className={`font-mono font-medium ${roi.color} cursor-help border-b border-dotted border-current`}>
+                        {roi.text}
+                      </span>
+                    </Tooltip>
+                  ) : (
+                    <span className={`font-mono font-medium ${roi.color}`}>
+                      {roi.text}
+                    </span>
+                  )}
                 </td>
 
                 {/* Exchanges */}

@@ -22,6 +22,7 @@ export default function EditAssetPage() {
     displayName: "",
     symbol: "",
     riskLevel: "medium" as "low" | "medium" | "high" | "very_high",
+    riskDescription: "",
     description: "",
     paradigmaUrl: "",
     websiteUrl: "",
@@ -43,6 +44,7 @@ export default function EditAssetPage() {
           displayName: data.displayName || "",
           symbol: data.symbol || "",
           riskLevel: data.riskLevel || "medium",
+          riskDescription: data.riskDescription || "",
           description: data.description || "",
           paradigmaUrl: data.paradigmaUrl || "",
           websiteUrl: data.websiteUrl || "",
@@ -60,14 +62,8 @@ export default function EditAssetPage() {
       });
   }, [ticker]);
 
-  const addExchange = () => {
-    setExchanges([...exchanges, { name: "", url: "" }]);
-  };
-
-  const removeExchange = (i: number) => {
-    setExchanges(exchanges.filter((_, idx) => idx !== i));
-  };
-
+  const addExchange = () => setExchanges([...exchanges, { name: "", url: "" }]);
+  const removeExchange = (i: number) => setExchanges(exchanges.filter((_, idx) => idx !== i));
   const updateExchange = (i: number, field: "name" | "url", value: string) => {
     const updated = [...exchanges];
     updated[i] = { ...updated[i], [field]: value };
@@ -83,6 +79,7 @@ export default function EditAssetPage() {
       const payload = {
         ticker,
         ...form,
+        riskDescription: form.riskDescription || null,
         paradigmaUrl: form.paradigmaUrl || null,
         websiteUrl: form.websiteUrl || null,
         coingeckoUrl: form.coingeckoUrl || null,
@@ -111,10 +108,10 @@ export default function EditAssetPage() {
   };
 
   const riskOptions = [
-    { value: "low", label: "Low", color: "text-emerald-400" },
-    { value: "medium", label: "Medium", color: "text-amber-400" },
-    { value: "high", label: "High", color: "text-orange-400" },
-    { value: "very_high", label: "Very High", color: "text-red-400" },
+    { value: "low", label: "Baixo", color: "text-emerald-400" },
+    { value: "medium", label: "Médio", color: "text-amber-400" },
+    { value: "high", label: "Alto", color: "text-orange-400" },
+    { value: "very_high", label: "Muito Alto", color: "text-red-400" },
   ];
 
   if (loading) {
@@ -140,9 +137,7 @@ export default function EditAssetPage() {
             <input
               type="text"
               value={form.symbol}
-              onChange={(e) =>
-                setForm({ ...form, symbol: e.target.value.toUpperCase() })
-              }
+              onChange={(e) => setForm({ ...form, symbol: e.target.value.toUpperCase() })}
               className="w-full bg-surface-2 border border-surface-4 rounded-lg px-3 py-2.5 text-sm text-gray-100 focus:outline-none focus:border-brand-500 font-mono"
             />
           </div>
@@ -153,9 +148,7 @@ export default function EditAssetPage() {
             <input
               type="text"
               value={form.displayName}
-              onChange={(e) =>
-                setForm({ ...form, displayName: e.target.value })
-              }
+              onChange={(e) => setForm({ ...form, displayName: e.target.value })}
               className="w-full bg-surface-2 border border-surface-4 rounded-lg px-3 py-2.5 text-sm text-gray-100 focus:outline-none focus:border-brand-500"
             />
           </div>
@@ -170,9 +163,7 @@ export default function EditAssetPage() {
             {riskOptions.map((opt) => (
               <button
                 key={opt.value}
-                onClick={() =>
-                  setForm({ ...form, riskLevel: opt.value as any })
-                }
+                onClick={() => setForm({ ...form, riskLevel: opt.value as any })}
                 className={`px-3 py-2 text-sm rounded-lg border transition-colors ${
                   form.riskLevel === opt.value
                     ? `border-current bg-current/10 ${opt.color}`
@@ -183,6 +174,20 @@ export default function EditAssetPage() {
               </button>
             ))}
           </div>
+        </div>
+
+        {/* Risk Description (tooltip) */}
+        <div>
+          <label className="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1.5">
+            Descrição do Risco <span className="text-gray-600 normal-case">(tooltip ao passar o mouse)</span>
+          </label>
+          <input
+            type="text"
+            value={form.riskDescription}
+            onChange={(e) => setForm({ ...form, riskDescription: e.target.value })}
+            placeholder="Ex: Ativo consolidado com alta liquidez e histórico longo."
+            className="w-full bg-surface-2 border border-surface-4 rounded-lg px-4 py-2.5 text-sm text-gray-100 placeholder:text-gray-600 focus:outline-none focus:border-brand-500"
+          />
         </div>
 
         {/* Description */}
@@ -214,9 +219,7 @@ export default function EditAssetPage() {
               ] as const
             ).map(({ key, label, ph }) => (
               <div key={key} className="flex items-center gap-2">
-                <span className="w-24 text-xs text-gray-500 shrink-0">
-                  {label}
-                </span>
+                <span className="w-24 text-xs text-gray-500 shrink-0">{label}</span>
                 <input
                   type="url"
                   value={form[key]}
@@ -251,58 +254,33 @@ export default function EditAssetPage() {
                   placeholder="https://www.binance.com/en/trade/BTC_USDT"
                   className="flex-1 bg-surface-2 border border-surface-4 rounded-lg px-3 py-2 text-sm text-gray-100 placeholder:text-gray-600 focus:outline-none focus:border-brand-500"
                 />
-                <button
-                  onClick={() => removeExchange(i)}
-                  className="p-1.5 text-gray-600 hover:text-red-400 transition-colors"
-                >
-                  <svg
-                    className="w-4 h-4"
-                    viewBox="0 0 20 20"
-                    fill="currentColor"
-                  >
-                    <path
-                      fillRule="evenodd"
-                      d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
-                      clipRule="evenodd"
-                    />
+                <button onClick={() => removeExchange(i)} className="p-1.5 text-gray-600 hover:text-red-400 transition-colors">
+                  <svg className="w-4 h-4" viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
                   </svg>
                 </button>
               </div>
             ))}
           </div>
-          <button
-            onClick={addExchange}
-            className="mt-2 w-full py-2.5 border border-dashed border-surface-4 rounded-lg text-sm text-gray-500 hover:text-gray-300 hover:border-surface-3 transition-colors"
-          >
+          <button onClick={addExchange} className="mt-2 w-full py-2.5 border border-dashed border-surface-4 rounded-lg text-sm text-gray-500 hover:text-gray-300 hover:border-surface-3 transition-colors">
             + Adicionar Corretora
           </button>
         </div>
 
         {/* Messages */}
         {error && (
-          <div className="px-4 py-3 bg-red-500/10 border border-red-500/20 rounded-lg text-sm text-red-400">
-            {error}
-          </div>
+          <div className="px-4 py-3 bg-red-500/10 border border-red-500/20 rounded-lg text-sm text-red-400">{error}</div>
         )}
         {success && (
-          <div className="px-4 py-3 bg-emerald-500/10 border border-emerald-500/20 rounded-lg text-sm text-emerald-400">
-            {success}
-          </div>
+          <div className="px-4 py-3 bg-emerald-500/10 border border-emerald-500/20 rounded-lg text-sm text-emerald-400">{success}</div>
         )}
 
         {/* Actions */}
         <div className="flex items-center gap-3 pt-2">
-          <button
-            onClick={handleSave}
-            disabled={saving}
-            className="px-6 py-2.5 text-sm font-medium bg-brand-600 hover:bg-brand-700 disabled:opacity-50 text-white rounded-lg transition-colors"
-          >
+          <button onClick={handleSave} disabled={saving} className="px-6 py-2.5 text-sm font-medium bg-brand-600 hover:bg-brand-700 disabled:opacity-50 text-white rounded-lg transition-colors">
             {saving ? "Salvando..." : "Salvar"}
           </button>
-          <button
-            onClick={() => router.back()}
-            className="px-4 py-2.5 text-sm text-gray-500 hover:text-gray-300 transition-colors"
-          >
+          <button onClick={() => router.back()} className="px-4 py-2.5 text-sm text-gray-500 hover:text-gray-300 transition-colors">
             Voltar
           </button>
         </div>

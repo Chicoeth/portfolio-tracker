@@ -14,6 +14,7 @@ export interface AssetInfo {
   displayName: string;
   symbol: string;
   riskLevel: "low" | "medium" | "high" | "very_high";
+  riskDescription: string | null;
   description: string;
   iconUrl: string | null;
   paradigmaUrl: string | null;
