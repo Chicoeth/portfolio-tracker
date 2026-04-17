@@ -43,7 +43,7 @@ const LOGO_MAP: Record<string, string> = {
   TradingView: "tradingview.png",
   DeFiLlama: "defillama.png",
   Paradigma: "paradigma.png",
-  Website: "", // no logo for generic website
+  Website: "",
 };
 
 function ExternalLinkIcon({
@@ -58,9 +58,8 @@ function ExternalLinkIcon({
   const logo = LOGO_MAP[name];
   const isLarge = size === "large";
   const boxClass = isLarge
-    ? "inline-flex items-center justify-center w-9 h-9 rounded-md bg-surface-3 hover:bg-surface-4 transition-colors"
-    : "inline-flex items-center justify-center w-7 h-7 rounded-md bg-surface-3 hover:bg-surface-4 transition-colors";
-  const imgClass = isLarge ? "w-5 h-5 object-contain" : "w-4 h-4 object-contain";
+    ? "inline-flex items-center justify-center w-8 h-8 rounded-full overflow-hidden hover:ring-2 hover:ring-brand-500/50 transition-all"
+    : "inline-flex items-center justify-center w-7 h-7 rounded-full overflow-hidden hover:ring-2 hover:ring-surface-4 transition-all";
 
   return (
     <a
@@ -74,11 +73,11 @@ function ExternalLinkIcon({
         <img
           src={`/logos/${logo}`}
           alt={name}
-          className={imgClass}
+          className="w-full h-full object-cover"
           loading="lazy"
         />
       ) : (
-        <span className="text-[10px] text-gray-400 font-medium">
+        <span className="w-full h-full flex items-center justify-center bg-surface-3 text-[10px] text-gray-400 font-medium">
           {name.slice(0, 2)}
         </span>
       )}
@@ -216,7 +215,7 @@ export function CompositionTable({ compositions }: Props) {
 
                 {/* Exchanges */}
                 <td className="py-3 px-4 hidden lg:table-cell">
-                  <div className="flex items-center justify-center gap-1">
+                  <div className="flex items-center justify-center gap-1.5">
                     {exchanges.map((ex) => (
                       <ExternalLinkIcon key={ex.name} name={ex.name} url={ex.url} />
                     ))}
@@ -228,7 +227,7 @@ export function CompositionTable({ compositions }: Props) {
 
                 {/* Info Links */}
                 <td className="py-3 px-4 hidden lg:table-cell">
-                  <div className="flex items-center justify-center gap-1">
+                  <div className="flex items-center justify-center gap-1.5">
                     {infoLinks.map((link) => (
                       <ExternalLinkIcon
                         key={link.name}
