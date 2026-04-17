@@ -65,7 +65,7 @@ function ExternalLinkIcon({
         target="_blank"
         rel="noopener noreferrer"
         title={name}
-        className="inline-flex items-center justify-center w-8 h-8 rounded-full overflow-hidden ring-2 ring-brand-500/60 shadow-[0_0_8px_rgba(99,102,241,0.3)] hover:ring-brand-400 hover:shadow-[0_0_12px_rgba(99,102,241,0.5)] transition-all"
+        className="inline-flex items-center justify-center w-8 h-8 rounded-full overflow-hidden shadow-[0_0_0_1.5px_#c9a227,0_0_6px_rgba(201,162,39,0.2)] hover:shadow-[0_0_0_1.5px_#d4af37,0_0_10px_rgba(201,162,39,0.35)] transition-all"
       >
         <img
           src={`/logos/${logo}`}
