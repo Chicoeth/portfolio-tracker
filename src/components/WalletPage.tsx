@@ -95,7 +95,7 @@ export function WalletPage({ walletId }: Props) {
 
             {/* Table */}
             <div className="overflow-x-auto">
-              <CompositionTable compositions={currentComposition} />
+              <CompositionTable compositions={currentComposition} isClosed={isClosed} />
             </div>
           </div>
         </div>

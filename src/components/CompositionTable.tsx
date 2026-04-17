@@ -5,6 +5,7 @@ import type { CompositionItem } from "@/types";
 
 interface Props {
   compositions: CompositionItem[];
+  isClosed?: boolean;
 }
 
 const RISK_LABELS: Record<string, { label: string; color: string }> = {
@@ -288,7 +289,7 @@ function AssetIcon({
   );
 }
 
-export function CompositionTable({ compositions }: Props) {
+export function CompositionTable({ compositions, isClosed = false }: Props) {
   return (
     <div className="overflow-x-auto">
       <table className="w-full text-sm">
@@ -401,7 +402,7 @@ export function CompositionTable({ compositions }: Props) {
                             <span className="font-mono">{formatPrice(c.entryPrice)}</span>
                           </div>
                           <div className="flex justify-between gap-4">
-                            <span className="text-gray-500">Atual:</span>
+                            <span className="text-gray-500">{isClosed ? "Fechamento:" : "Atual:"}</span>
                             <span className="font-mono">{formatPrice(c.currentPrice)}</span>
                           </div>
                         </div>
