@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useRef, useEffect } from "react";
 import type { CompositionItem } from "@/types";
 
 interface Props {
@@ -49,17 +50,32 @@ const LOGO_MAP: Record<string, string> = {
 function ExternalLinkIcon({
   name,
   url,
-  size = "normal",
+  isParadigma = false,
 }: {
   name: string;
   url: string;
-  size?: "normal" | "large";
+  isParadigma?: boolean;
 }) {
   const logo = LOGO_MAP[name];
-  const isLarge = size === "large";
-  const boxClass = isLarge
-    ? "inline-flex items-center justify-center w-8 h-8 rounded-full overflow-hidden hover:ring-2 hover:ring-brand-500/50 transition-all"
-    : "inline-flex items-center justify-center w-7 h-7 rounded-full overflow-hidden hover:ring-2 hover:ring-surface-4 transition-all";
+
+  if (isParadigma) {
+    return (
+      <a
+        href={url}
+        target="_blank"
+        rel="noopener noreferrer"
+        title={name}
+        className="inline-flex items-center justify-center w-8 h-8 rounded-full overflow-hidden ring-2 ring-brand-500/60 shadow-[0_0_8px_rgba(99,102,241,0.3)] hover:ring-brand-400 hover:shadow-[0_0_12px_rgba(99,102,241,0.5)] transition-all"
+      >
+        <img
+          src={`/logos/${logo}`}
+          alt={name}
+          className="w-full h-full object-cover scale-110"
+          loading="lazy"
+        />
+      </a>
+    );
+  }
 
   return (
     <a
@@ -67,7 +83,7 @@ function ExternalLinkIcon({
       target="_blank"
       rel="noopener noreferrer"
       title={name}
-      className={boxClass}
+      className="inline-flex items-center justify-center w-7 h-7 rounded-full overflow-hidden hover:ring-2 hover:ring-surface-4 transition-all"
     >
       {logo ? (
         <img
@@ -77,11 +93,130 @@ function ExternalLinkIcon({
           loading="lazy"
         />
       ) : (
-        <span className="w-full h-full flex items-center justify-center bg-surface-3 text-[10px] text-gray-400 font-medium">
-          {name.slice(0, 2)}
+        <span className="w-full h-full flex items-center justify-center bg-surface-3 text-gray-400">
+          <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="12" cy="12" r="10" />
+            <path d="M2 12h20" />
+            <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
+          </svg>
         </span>
       )}
     </a>
+  );
+}
+
+/**
+ * Overflow button: shows "+N" and reveals a dropdown with the remaining links.
+ */
+function OverflowLinks({
+  links,
+}: {
+  links: { name: string; url: string; isParadigma?: boolean }[];
+}) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function handleClick(e: MouseEvent) {
+      if (ref.current && !ref.current.contains(e.target as Node)) {
+        setOpen(false);
+      }
+    }
+    if (open) document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, [open]);
+
+  return (
+    <div className="relative" ref={ref}>
+      <button
+        onClick={() => setOpen(!open)}
+        className="inline-flex items-center justify-center w-7 h-7 rounded-full bg-surface-3 hover:bg-surface-4 transition-colors text-[10px] font-semibold text-gray-400"
+      >
+        +{links.length}
+      </button>
+      {open && (
+        <div className="absolute right-0 top-full mt-1.5 z-50 bg-surface-2 border border-surface-4 rounded-lg shadow-xl py-1.5 min-w-[160px]">
+          {links.map((link) => {
+            const logo = LOGO_MAP[link.name];
+            return (
+              <a
+                key={link.name}
+                href={link.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-2.5 px-3 py-1.5 hover:bg-surface-3 transition-colors"
+              >
+                {logo ? (
+                  <img
+                    src={`/logos/${logo}`}
+                    alt={link.name}
+                    className="w-5 h-5 rounded-full object-cover"
+                  />
+                ) : (
+                  <span className="w-5 h-5 rounded-full bg-surface-4 flex items-center justify-center text-gray-400">
+                    <svg className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                      <circle cx="12" cy="12" r="10" />
+                      <path d="M2 12h20" />
+                      <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
+                    </svg>
+                  </span>
+                )}
+                <span className="text-xs text-gray-300">{link.name}</span>
+              </a>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
+
+/**
+ * Renders a row of link icons, limited to MAX_VISIBLE.
+ * If more exist, shows the first (MAX_VISIBLE - 1) + an overflow "+N" button.
+ */
+const MAX_VISIBLE = 3;
+
+function LinkIcons({
+  links,
+}: {
+  links: { name: string; url: string; isParadigma?: boolean }[];
+}) {
+  if (links.length === 0) {
+    return <span className="text-xs text-gray-600">—</span>;
+  }
+
+  if (links.length <= MAX_VISIBLE) {
+    return (
+      <div className="flex items-center justify-center gap-1.5">
+        {links.map((link) => (
+          <ExternalLinkIcon
+            key={link.name}
+            name={link.name}
+            url={link.url}
+            isParadigma={link.isParadigma}
+          />
+        ))}
+      </div>
+    );
+  }
+
+  // Show first (MAX_VISIBLE - 1), then overflow with the rest
+  const visible = links.slice(0, MAX_VISIBLE - 1);
+  const overflow = links.slice(MAX_VISIBLE - 1);
+
+  return (
+    <div className="flex items-center justify-center gap-1.5">
+      {visible.map((link) => (
+        <ExternalLinkIcon
+          key={link.name}
+          name={link.name}
+          url={link.url}
+          isParadigma={link.isParadigma}
+        />
+      ))}
+      <OverflowLinks links={overflow} />
+    </div>
   );
 }
 
@@ -153,15 +288,21 @@ export function CompositionTable({ compositions }: Props) {
             const roi = formatROI(c.roi);
             const exchanges = (c.asset.exchanges as { name: string; url: string }[]) || [];
 
-            // Build info links — Paradigma FIRST and larger, then the rest
-            const infoLinks: { name: string; url: string; size: "normal" | "large" }[] = [];
+            // Build exchange links
+            const exchangeLinks = exchanges.map((ex) => ({
+              name: ex.name,
+              url: ex.url,
+            }));
+
+            // Build info links — Paradigma FIRST with special styling
+            const infoLinks: { name: string; url: string; isParadigma?: boolean }[] = [];
             if (c.asset.paradigmaUrl) {
-              infoLinks.push({ name: "Paradigma", url: c.asset.paradigmaUrl, size: "large" });
+              infoLinks.push({ name: "Paradigma", url: c.asset.paradigmaUrl, isParadigma: true });
             }
-            if (c.asset.websiteUrl) infoLinks.push({ name: "Website", url: c.asset.websiteUrl, size: "normal" });
-            if (c.asset.coingeckoUrl) infoLinks.push({ name: "CoinGecko", url: c.asset.coingeckoUrl, size: "normal" });
-            if (c.asset.tradingviewUrl) infoLinks.push({ name: "TradingView", url: c.asset.tradingviewUrl, size: "normal" });
-            if (c.asset.defillamaUrl) infoLinks.push({ name: "DeFiLlama", url: c.asset.defillamaUrl, size: "normal" });
+            if (c.asset.websiteUrl) infoLinks.push({ name: "Website", url: c.asset.websiteUrl });
+            if (c.asset.coingeckoUrl) infoLinks.push({ name: "CoinGecko", url: c.asset.coingeckoUrl });
+            if (c.asset.tradingviewUrl) infoLinks.push({ name: "TradingView", url: c.asset.tradingviewUrl });
+            if (c.asset.defillamaUrl) infoLinks.push({ name: "DeFiLlama", url: c.asset.defillamaUrl });
 
             return (
               <tr
@@ -215,31 +356,12 @@ export function CompositionTable({ compositions }: Props) {
 
                 {/* Exchanges */}
                 <td className="py-3 px-4 hidden lg:table-cell">
-                  <div className="flex items-center justify-center gap-1.5">
-                    {exchanges.map((ex) => (
-                      <ExternalLinkIcon key={ex.name} name={ex.name} url={ex.url} />
-                    ))}
-                    {exchanges.length === 0 && (
-                      <span className="text-xs text-gray-600">—</span>
-                    )}
-                  </div>
+                  <LinkIcons links={exchangeLinks} />
                 </td>
 
                 {/* Info Links */}
                 <td className="py-3 px-4 hidden lg:table-cell">
-                  <div className="flex items-center justify-center gap-1.5">
-                    {infoLinks.map((link) => (
-                      <ExternalLinkIcon
-                        key={link.name}
-                        name={link.name}
-                        url={link.url}
-                        size={link.size}
-                      />
-                    ))}
-                    {infoLinks.length === 0 && (
-                      <span className="text-xs text-gray-600">—</span>
-                    )}
-                  </div>
+                  <LinkIcons links={infoLinks} />
                 </td>
               </tr>
             );
