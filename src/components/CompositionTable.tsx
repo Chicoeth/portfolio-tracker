@@ -262,16 +262,16 @@ export function CompositionTable({ compositions }: Props) {
             <th className="text-left py-3 px-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">
               Ativo
             </th>
-            <th className="text-right py-3 px-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+            <th className="text-center py-3 px-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">
               Alocação
             </th>
-            <th className="text-right py-3 px-4 text-xs font-semibold text-gray-500 uppercase tracking-wider hidden sm:table-cell">
+            <th className="text-center py-3 px-4 text-xs font-semibold text-gray-500 uppercase tracking-wider hidden sm:table-cell">
               Market Cap
             </th>
             <th className="text-center py-3 px-4 text-xs font-semibold text-gray-500 uppercase tracking-wider hidden md:table-cell">
               Risco
             </th>
-            <th className="text-right py-3 px-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+            <th className="text-center py-3 px-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">
               ROI
             </th>
             <th className="text-center py-3 px-4 text-xs font-semibold text-gray-500 uppercase tracking-wider hidden lg:table-cell">
@@ -327,14 +327,14 @@ export function CompositionTable({ compositions }: Props) {
                 </td>
 
                 {/* Allocation */}
-                <td className="py-3 px-4 text-right">
+                <td className="py-3 px-4 text-center">
                   <span className="font-mono font-medium text-gray-200">
                     {(c.weight * 100).toFixed(0)}%
                   </span>
                 </td>
 
                 {/* Market Cap */}
-                <td className="py-3 px-4 text-right hidden sm:table-cell">
+                <td className="py-3 px-4 text-center hidden sm:table-cell">
                   <span className="font-mono text-gray-400">
                     {formatMarketCap(c.marketCap)}
                   </span>
@@ -348,7 +348,7 @@ export function CompositionTable({ compositions }: Props) {
                 </td>
 
                 {/* ROI */}
-                <td className="py-3 px-4 text-right">
+                <td className="py-3 px-4 text-center">
                   <span className={`font-mono font-medium ${roi.color}`}>
                     {roi.text}
                   </span>
